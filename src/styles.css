@@ -1,0 +1,8 @@
+.alertContainer {
+  position: relative;
+}
+.alert {
+  position: absolute!important;
+  top: 0;
+  width: 100%;
+}

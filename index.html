@@ -2,17 +2,31 @@
 <html>
   <head>
     <title>Webpack Package</title>
+    <link rel="stylesheet" href="./src/styles.css">
   </head>
   <body>
     <div class="container">
+      <div class="alertContainer" id="alertContainer">
+      </div>
       <div class="jumbotron">
-        <form class="form-inline">
+        <form class="form-inline" id="rssForm">
           <div class="form-group mx-sm-3">
-            <input type="text" class="form-control" placeholder="Enter rss url">
+            <input value="" id="rssInput" type="text" class="form-control" placeholder="Enter rss url">
           </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
+          <button id="submitBtn" type="submit" class="btn btn-primary">Submit</button>
         </form>
       </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Description</th>
+          </tr>
+        </thead>
+          <tbody id="feedsTable">
+          </tbody>
+      </table>
+      <div class="card-columns" id="articleList"></div>
     </div>
   </body>
 </html>
