@@ -45,13 +45,11 @@ function parseArticle(article) {
   const description = article.querySelector('description').textContent;
   const link = article.querySelector('link').textContent;
   const pubDate = article.querySelector('pubDate').textContent;
-  const creator = article.getElementsByTagName('dc:creator')[0].textContent;
   return {
     title,
     description,
     link,
     pubDate,
-    creator,
   };
 }
 
@@ -65,6 +63,7 @@ function fetchArticles(url) {
         (acc, article) => (acc[article.link] ? acc : { [article.link]: article, ...acc }),
         state.articles,
       );
+
       return parsedData;
     })
     .catch((err) => {
