@@ -49,7 +49,9 @@ export const renderArticles = ({ articles }) => {
     const el = document.createElement('div');
     el.innerHTML = `
       <li class="list-group-item">
-        <a href="#" data-toggle="modal" data-target="#articleModal" data-article="${article.link}">
+        <a href="#" data-toggle="modal" data-target="#articleModal" data-article="${
+  article.link
+}">
           ${article.title}
         </a>
       </li>

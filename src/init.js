@@ -7,9 +7,13 @@ import $ from 'jquery';
 import getFeed from './api';
 import parse from './parse';
 import {
-  inputRender, renderTable, renderButton, renderArticles,
-  renderAlert, renderModal,
-} from './render';
+  inputRender,
+  renderTable,
+  renderButton,
+  renderArticles,
+  renderAlert,
+  renderModal,
+} from './view';
 
 const rssInput = document.getElementById('rssInput');
 const rssForm = document.getElementById('rssForm');
@@ -36,7 +40,6 @@ rssInput.addEventListener('input', (event) => {
   inputRender(state);
 });
 
-
 function parseArticle(article) {
   const title = article.querySelector('title').textContent;
   const description = article.querySelector('description').textContent;
@@ -53,22 +56,28 @@ function parseArticle(article) {
 }
 
 function fetchArticles(url) {
-  return getFeed(url).then((res) => {
-    const parsedData = parse(res.data);
-    const articles = parsedData.querySelectorAll('item');
-    const parsedArticles = [...articles].map(parseArticle);
-    state.articles = parsedArticles.reduce((acc, article) => (acc[article.link]
-      ? acc : { [article.link]: article, ...acc }), state.articles);
-    setTimeout(() => {
-      fetchArticles(url);
-    }, 5000);
-    return parsedData;
-  }).catch((err) => {
-    state.form.state = 'error';
-    if (err.response.status === 404) {
-      state.form.errorMessage = 'Feed not found';
-    }
-  });
+  return getFeed(url)
+    .then((res) => {
+      const parsedData = parse(res.data);
+      const articles = parsedData.querySelectorAll('item');
+      const parsedArticles = [...articles].map(parseArticle);
+      state.articles = parsedArticles.reduce(
+        (acc, article) => (acc[article.link] ? acc : { [article.link]: article, ...acc }),
+        state.articles,
+      );
+      return parsedData;
+    })
+    .catch((err) => {
+      state.form.state = 'error';
+      if (err.response.status === 404) {
+        state.form.errorMessage = 'Feed not found';
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        fetchArticles(url);
+      }, 5000);
+    });
 }
 
 rssForm.addEventListener('submit', (event) => {
