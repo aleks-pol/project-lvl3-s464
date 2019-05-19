@@ -58,7 +58,7 @@ function fetchArticles(url) {
     const articles = parsedData.querySelectorAll('item');
     const parsedArticles = [...articles].map(parseArticle);
     state.articles = parsedArticles.reduce((acc, article) => (acc[article.link]
-      ? acc : { ...acc, [article.link]: article }), state.articles);
+      ? acc : { [article.link]: article, ...acc }), state.articles);
     setTimeout(() => {
       fetchArticles(url);
     }, 5000);
