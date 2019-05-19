@@ -45,13 +45,13 @@ export const renderButton = ({ form }) => {
 
 export const renderArticles = ({ articles }) => {
   articleList.innerHTML = '';
-  articles.forEach((article) => {
+  Object.values(articles).forEach((article) => {
     const el = document.createElement('div');
     el.innerHTML = `
       <li class="list-group-item">
-        <button data-toggle="modal" data-target="#articleModal" data-article="${article.id}">
-            ${article.title}
-        </button>
+        <a href="#" data-toggle="modal" data-target="#articleModal" data-article="${article.link}">
+          ${article.title}
+        </a>
       </li>
     `;
     articleList.appendChild(el);

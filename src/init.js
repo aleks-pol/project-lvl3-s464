@@ -3,7 +3,6 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { isURL } from 'validator';
 import { watch } from 'melanke-watchjs';
-import { uniqueId } from 'lodash/fp';
 import $ from 'jquery';
 import getFeed from './api';
 import parse from './parse';
@@ -17,15 +16,15 @@ const rssForm = document.getElementById('rssForm');
 
 const state = {
   url: {
-    valid: true,
-    value: 'http://lorem-rss.herokuapp.com/feed',
+    valid: false,
+    value: '',
   },
   feeds: [],
   form: {
     state: '',
     errorMessage: '',
   },
-  articles: [],
+  articles: {},
   openedArticle: null,
 };
 
@@ -37,6 +36,41 @@ rssInput.addEventListener('input', (event) => {
   inputRender(state);
 });
 
+
+function parseArticle(article) {
+  const title = article.querySelector('title').textContent;
+  const description = article.querySelector('description').textContent;
+  const link = article.querySelector('link').textContent;
+  const pubDate = article.querySelector('pubDate').textContent;
+  const creator = article.getElementsByTagName('dc:creator')[0].textContent;
+  return {
+    title,
+    description,
+    link,
+    pubDate,
+    creator,
+  };
+}
+
+function fetchArticles(url) {
+  return getFeed(url).then((res) => {
+    const parsedData = parse(res.data);
+    const articles = parsedData.querySelectorAll('item');
+    const parsedArticles = [...articles].map(parseArticle);
+    state.articles = parsedArticles.reduce((acc, article) => (acc[article.link]
+      ? acc : { ...acc, [article.link]: article }), state.articles);
+    setTimeout(() => {
+      fetchArticles(url);
+    }, 5000);
+    return parsedData;
+  }).catch((err) => {
+    state.form.state = 'error';
+    if (err.response.status === 404) {
+      state.form.errorMessage = 'Feed not found';
+    }
+  });
+}
+
 rssForm.addEventListener('submit', (event) => {
   event.preventDefault();
   if (!state.url.valid) {
@@ -44,44 +78,21 @@ rssForm.addEventListener('submit', (event) => {
   }
   if (!state.feeds.some(({ url }) => url === state.url.value)) {
     state.form.state = 'loading';
-    getFeed(state.url.value).then((res) => {
-      const parsedData = parse(res.data);
+    fetchArticles(state.url.value).then((parsedData) => {
+      state.form.state = '';
+      rssForm.reset();
       state.feeds.push({
+        url: state.url.value,
         title: parsedData.querySelector('title').textContent,
         description: parsedData.querySelector('description').textContent,
       });
-      const articles = parsedData.querySelectorAll('item');
-      const mappedArtices = [...articles].map((article) => {
-        const title = article.querySelector('title').textContent;
-        const description = article.querySelector('description').textContent;
-        const link = article.querySelector('link').textContent;
-        const pubDate = article.querySelector('pubDate').textContent;
-        const creator = article.getElementsByTagName('dc:creator')[0].textContent;
-        return {
-          id: uniqueId(),
-          title,
-          description,
-          link,
-          pubDate,
-          creator,
-        };
-      });
-      state.articles = mappedArtices;
-      state.form.state = '';
-      rssForm.reset();
-    }).catch((err) => {
-      state.form.state = 'error';
-      console.dir(err);
-      if (err.response.status === 404) {
-        state.form.errorMessage = 'Feed not found';
-      }
     });
   }
 });
 
 $('#articleModal').on('show.bs.modal', (event) => {
   const link = $(event.relatedTarget);
-  state.openedArticle = state.articles.find(({ id }) => id === link.data('article').toString());
+  state.openedArticle = state.articles[link.data('article').toString()];
 });
 
 watch(state, 'feeds', () => renderTable(state));
