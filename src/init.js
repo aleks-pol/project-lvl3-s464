@@ -9,7 +9,7 @@ import getFeed from './api';
 import parse from './parse';
 import {
   inputRender, renderTable, renderButton, renderArticles,
-  renderAlert,
+  renderAlert, renderModal,
 } from './render';
 
 const rssInput = document.getElementById('rssInput');
@@ -26,6 +26,7 @@ const state = {
     errorMessage: '',
   },
   articles: [],
+  openedArticle: null,
 };
 
 rssInput.addEventListener('input', (event) => {
@@ -77,6 +78,12 @@ rssForm.addEventListener('submit', (event) => {
     });
   }
 });
+
+$('#articleModal').on('show.bs.modal', (event) => {
+  const link = $(event.relatedTarget);
+  state.openedArticle = state.articles.find(({ id }) => id === link.data('article').toString());
+});
+
 watch(state, 'feeds', () => renderTable(state));
 watch(state, 'form', () => {
   renderButton(state);
@@ -88,3 +95,4 @@ watch(state, 'form', () => {
   }
 });
 watch(state, 'articles', () => renderArticles(state));
+watch(state, 'openedArticle', () => renderModal(state));

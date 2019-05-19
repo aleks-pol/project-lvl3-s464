@@ -3,9 +3,10 @@ const feedsTable = document.getElementById('feedsTable');
 const submitBtn = document.getElementById('submitBtn');
 const articleList = document.getElementById('articleList');
 const alertContainer = document.getElementById('alertContainer');
+const articleModal = document.getElementById('articleModal');
 
-export const inputRender = (state) => {
-  if (!state.url.valid) {
+export const inputRender = ({ url }) => {
+  if (!url.valid) {
     rssInput.classList.add('is-invalid');
   } else {
     rssInput.classList.remove('is-invalid');
@@ -23,16 +24,16 @@ const renderRow = (feed) => {
   return row;
 };
 
-export const renderTable = (state) => {
+export const renderTable = ({ feeds }) => {
   feedsTable.innerHTML = '';
-  state.feeds.forEach((feed) => {
+  feeds.forEach((feed) => {
     const row = renderRow(feed);
     feedsTable.appendChild(row);
   });
 };
 
-export const renderButton = (state) => {
-  if (state.form.state === 'loading') {
+export const renderButton = ({ form }) => {
+  if (form.state === 'loading') {
     submitBtn.innerHTML = `
       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`;
     submitBtn.disabled = true;
@@ -42,25 +43,22 @@ export const renderButton = (state) => {
   }
 };
 
-export const renderArticles = (state) => {
+export const renderArticles = ({ articles }) => {
   articleList.innerHTML = '';
-  state.articles.forEach((article) => {
+  articles.forEach((article) => {
     const el = document.createElement('div');
     el.innerHTML = `
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">${article.title}</h5>
-          <p class="card-text">${article.description}</p>
-          <a href=${article.link} class="card-link">Read More</a>
-        </div>
-      </div>
+      <li class="list-group-item">
+        <button data-toggle="modal" data-target="#articleModal" data-article="${article.id}">
+            ${article.title}
+        </button>
+      </li>
     `;
     articleList.appendChild(el);
   });
 };
 
-export const renderAlert = (state) => {
-  const { form: { errorMessage } } = state;
+export const renderAlert = ({ form: { errorMessage } }) => {
   const alertEl = `
    <div class="alert alert-warning alert-dismissible" role="alert">
       ${errorMessage}
@@ -70,4 +68,9 @@ export const renderAlert = (state) => {
       </div>
   `;
   alertContainer.innerHTML = alertEl;
+};
+
+export const renderModal = ({ openedArticle }) => {
+  articleModal.querySelector('#articleModalLabel').innerText = openedArticle.title;
+  articleModal.querySelector('.modal-body').innerText = openedArticle.description;
 };
