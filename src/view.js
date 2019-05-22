@@ -1,14 +1,7 @@
 import $ from 'jquery';
 
-const rssInput = document.getElementById('rssInput');
-const feedsTable = document.getElementById('feedsTable');
-const submitBtn = document.getElementById('submitBtn');
-const articleList = document.getElementById('articleList');
-const alertContainer = document.getElementById('alertContainer');
-const articleModal = document.getElementById('articleModal');
-const rssForm = document.getElementById('rssForm');
-
 const renderAlert = (errorMessage) => {
+  const alertContainer = document.getElementById('alertContainer');
   const alertEl = `
    <div class="alert alert-danger alert-dismissible" role="alert">
       ${errorMessage}
@@ -32,6 +25,7 @@ const renderRow = (feed) => {
 };
 
 export const renderTable = ({ feeds }) => {
+  const feedsTable = document.getElementById('feedsTable');
   feedsTable.innerHTML = '';
   feeds.forEach((feed) => {
     const row = renderRow(feed);
@@ -40,12 +34,16 @@ export const renderTable = ({ feeds }) => {
 };
 
 export const renderForm = ({ form }) => {
+  const rssInput = document.getElementById('rssInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const rssForm = document.getElementById('rssForm');
+
   if (!form.valid) {
     rssInput.classList.add('is-invalid');
   } else {
     rssInput.classList.remove('is-invalid');
   }
-  switch (form.state) {
+  switch (form.submittingState) {
     case 'loading': {
       submitBtn.innerHTML = `
       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`;
@@ -74,6 +72,7 @@ export const renderForm = ({ form }) => {
 };
 
 export const renderArticles = ({ articles }) => {
+  const articleList = document.getElementById('articleList');
   articleList.innerHTML = '';
   Object.values(articles).forEach((article) => {
     const el = document.createElement('div');
@@ -89,6 +88,7 @@ export const renderArticles = ({ articles }) => {
 };
 
 export const renderModal = ({ openedArticle }) => {
+  const articleModal = document.getElementById('articleModal');
   articleModal.querySelector('#articleModalLabel').innerText = openedArticle.title;
   articleModal.querySelector('.modal-body').innerText = openedArticle.description;
 };

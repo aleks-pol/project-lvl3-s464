@@ -7,7 +7,7 @@ import { keyBy, compose, merge } from 'lodash/fp';
 import $ from 'jquery';
 import getFeed from './api';
 import parse from './parse';
-import state from './state';
+import initState from './state';
 
 import {
   renderTable,
@@ -16,32 +16,29 @@ import {
   renderModal,
 } from './view';
 
-function fetchFeed(url) {
-  return getFeed(url)
-    .then((res) => {
-      const [articles, feed] = parse(res.data);
-      state.articles = compose(merge(state.articles), keyBy('link'))(articles);
-      return feed;
-    });
-}
-
-
-function poolArticles(url) {
-  setTimeout(() => {
-    fetchFeed(url).finally(() => poolArticles(url));
-  }, 5000);
-}
-
-
 export default () => {
+  const state = initState();
   const rssInput = document.getElementById('rssInput');
   const rssForm = document.getElementById('rssForm');
+
+  const fetchFeed = url => getFeed(url)
+    .then((res) => {
+      const rss = parse(res.data);
+      state.articles = compose(merge(state.articles), keyBy('link'))(rss.articles);
+      return rss;
+    });
+
+  function poolArticles(url) {
+    setTimeout(() => {
+      fetchFeed(url).finally(() => poolArticles(url));
+    }, 5000);
+  }
 
   rssInput.addEventListener('input', (event) => {
     const { target } = event;
     const { value } = target;
     state.form.url = value;
-    state.form.state = '';
+    state.form.submittingState = '';
     state.form.valid = isURL(value);
   });
 
@@ -51,16 +48,17 @@ export default () => {
       return;
     }
     if (!state.feeds.some(({ url }) => url === state.form.url)) {
-      state.form.state = 'loading';
-      fetchFeed(state.form.url).then((feed) => {
-        state.form.state = 'success';
+      state.form.submittingState = 'loading';
+      fetchFeed(state.form.url).then(({ title, description }) => {
+        state.form.submittingState = 'success';
         state.feeds.push({
-          ...feed,
+          title,
+          description,
           url: state.form.url,
         });
         poolArticles(state.form.url);
       }).catch((err) => {
-        state.form.state = 'error';
+        state.form.submittingState = 'error';
         if (err.response.status === 404) {
           state.form.errorMessage = 'Feed not found';
         }

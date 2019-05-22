@@ -1,11 +1,11 @@
-export default {
+export default () => ({
   feeds: [],
   form: {
-    state: '',
+    submittingState: '',
     errorMessage: '',
     valid: false,
     url: '',
   },
   articles: {},
   openedArticle: null,
-};
+});

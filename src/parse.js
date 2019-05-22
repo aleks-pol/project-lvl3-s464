@@ -17,9 +17,11 @@ export default (data) => {
   const rss = parser.parseFromString(data, 'application/xml');
   const articles = rss.querySelectorAll('item');
   const parsedArticles = [...articles].map(parseArticle);
-  const parsedFeed = {
-    title: rss.querySelector('title').textContent,
-    description: rss.querySelector('description').textContent,
+  const title = rss.querySelector('title').textContent;
+  const description = rss.querySelector('description').textContent;
+  return {
+    title,
+    description,
+    articles: parsedArticles,
   };
-  return [parsedArticles, parsedFeed];
 };
